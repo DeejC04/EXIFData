@@ -6,22 +6,40 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useDropzone } from "react-dropzone";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollArea } from "./ui/scroll-area";
-import { FileWithPreview } from "@/app/types/types";
+import { UploadProgress } from "@/app/types/types"
+import { Button } from "./ui/button";
 
 export default function FileUpload() {
-    const [uploadedfiles, setUploadedFiles] = useState<FileWithPreview[]>([])
-    // const [rejected, setRejected] = useState([])
+    const [filesToUpload, setFilesToUpload] = useState<UploadProgress[]>([])
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+    const [inProgress, setInProgress] = useState<UploadProgress[]>([])
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
-        setUploadedFiles(prevUploadedFiles => [
-            ...prevUploadedFiles,
-            ...acceptedFiles.map((file) => {
-                // Cast to FileWithPreview to add the preview property
-                const fileWithPreview = file as FileWithPreview;
-                fileWithPreview.preview = URL.createObjectURL(file);
-                return fileWithPreview;
-            })
-        ]);
+    const filesInQueue: boolean = filesToUpload?.length > 0
+
+    const removeFile = (file: File) => {
+        setFilesToUpload((prevUploadProgress) => {
+            return prevUploadProgress.filter((item) => item !== file);
+        });
+
+        // setUploadedFiles((prevUploadedFiles) => {
+        //   return prevUploadedFiles.filter((item) => item !== file);
+        // });
+    };
+
+    const onDrop = useCallback(async (acceptedFiles: File[]) => {
+        setFilesToUpload((prevFilesToUpload) => {
+            return [
+                ...prevFilesToUpload,
+                ...acceptedFiles.map((file) => {
+                    return {
+                        progress: 0,
+                        File: file,
+                        source: null,
+                        preview: URL.createObjectURL(file)
+                    };
+                }),
+            ];
+        });
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -32,7 +50,7 @@ export default function FileUpload() {
     })
 
     return (
-        <Card className={`w-1/4 transition-all duration-300 ease-in-out overflow-hidden ${uploadedfiles.length > 0 ? 'max-h-[930px]' : 'max-h-[250px]'} ${isDragActive ? 'bg-accent' : ''
+        <Card className={`w-1/4 transition-all duration-300 ease-in-out overflow-hidden ${filesToUpload.length > 0 ? 'max-h-[930px]' : 'max-h-[250px]'} ${isDragActive ? 'bg-accent' : ''
             }`}>
             <CardHeader>
                 <CardTitle>Upload some images</CardTitle>
@@ -60,29 +78,36 @@ export default function FileUpload() {
                     </div>
                 </div>
 
-                {uploadedfiles?.length > 0 && (
+                {filesInQueue && (
                     <>
                         <h2 className="mt-4 font-semibold">
                             Uploaded files
                         </h2>
-                        <ScrollArea className="h-48">
+                        <ScrollArea className="h-48 mb-4">
                             <div>
                                 <div className="z-50 bg-gradient-to-b from-neutral-950 via-neutral-950 h-10 w-full -mb-24 -mt-6 absolute"></div>
                                 <div className="z-50 bg-gradient-to-b from-neutral-950 via-neutral-950 h-10 w-full -mb-24 -mt-6 absolute"></div>
                             </div>
-                                {
-                                    uploadedfiles.map((fileInfo, index) =>
-                                        <FilePreview
-                                            key={fileInfo.name}
-                                            fileName={fileInfo.name}
-                                            uploadProgress={100}
-                                            previewImage={fileInfo.preview}
-                                        />
-                                    )}
+                            {
+                                filesToUpload.map((fileInfo, index) =>
+                                    <FilePreview
+                                        key={index}
+                                        fileName={fileInfo.File.name}
+                                        uploadProgress={100}
+                                        previewImage={fileInfo.preview}
+                                        removeFunction={() => removeFile(fileInfo)}
+                                    />
+                                )}
                         </ScrollArea>
                     </>
                 )}
             </CardContent>
+            {/* Have to use this conditional twice due to the way the shadcn card is structured */}
+            {filesInQueue && (
+                <CardFooter>
+                    <Button className="w-full">Upload Images</Button>
+                </CardFooter>
+            )}
         </Card>
     )
 }
