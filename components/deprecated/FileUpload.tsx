@@ -27,18 +27,18 @@
 //                 )
 //             ])
 //         }
-    
+
 //         if (rejectedFiles?.length) {
 //             setRejectedFiles(previousFiles => [...previousFiles, ...rejectedFiles])
 //         }
 //     }, [])
 
-//     const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+//     const { getRootProps, getInputProps, isDragActive } = useDropzone({
 //         onDrop,
 //         accept: {
 //             "image/*": []
 //         },
-//         maxSize: 10240000 // 10 mb 
+//         maxSize: 10240000 // 10 mb
 //     })
 
 //     const removeFile = (fileName: string) => {
@@ -54,7 +54,7 @@
 //                         <CardTitle>
 //                             Upload some images
 //                         </CardTitle>
-//                             {isDragActive ? <CardDescription>Drop the files here..."</CardDescription> : <CardDescription>Drag and drop some files here, or click to select them</CardDescription>}
+//                             {isDragActive ? <CardDescription>"Drop the files here..."</CardDescription> : <CardDescription>Drag and drop some files here, or click to select them</CardDescription>}
 //                     </CardHeader>
 //                 </Card>
 //             </div>
@@ -88,14 +88,14 @@
 //                     ))}
 //                 </ul>
 
-//                 {rejectedFiles?.length ? 
+//                 {rejectedFiles?.length ?
 //                 <div>
 //                 <Alert variant="destructive">The following files could not be uploaded (file size limit 10mb and images only)</Alert>
 //                 <ul>
 //                     {rejectedFiles.map(({file, errors}) => (
 //                         <li key={file.name}><p>{file.name}</p></li>
-//                     ))} 
-//                 </ul></div> : 
+//                     ))}
+//                 </ul></div> :
 //                 null }
 //             </Card>
 //         </form>
