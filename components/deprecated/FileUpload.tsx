@@ -54,7 +54,7 @@
 //                         <CardTitle>
 //                             Upload some images
 //                         </CardTitle>
-//                             {isDragActive ? <CardDescription>"Drop the files here..."</CardDescription> : <CardDescription>Drag and drop some files here, or click to select them</CardDescription>}
+//                             {isDragActive ? <CardDescription>Drop the files here...</CardDescription> : <CardDescription>Drag and drop some files here, or click to select them</CardDescription>}
 //                     </CardHeader>
 //                 </Card>
 //             </div>
