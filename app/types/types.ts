@@ -16,5 +16,5 @@ export interface UploadProgress {
   progress: number;
   File: File;
   source: CancelTokenSource | null;
-  preview: any;
+  preview: string;
 }

@@ -25,7 +25,7 @@ export default function FileUpload() {
 
   const removeFile = (file: File) => {
     setFilesToUpload((prevUploadProgress) => {
-      return prevUploadProgress.filter((item) => item !== file);
+      return prevUploadProgress.filter((item) => item.File !== file);
     });
 
     // setUploadedFiles((prevUploadedFiles) => {
@@ -102,7 +102,7 @@ export default function FileUpload() {
                   fileName={fileInfo.File.name}
                   uploadProgress={100}
                   previewImage={fileInfo.preview}
-                  removeFunction={() => removeFile(fileInfo)}
+                  removeFunction={() => removeFile(fileInfo.File)}
                 />
               ))}
             </ScrollArea>
