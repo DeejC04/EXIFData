@@ -90,7 +90,7 @@ export default function FileUpload() {
 
         {filesInQueue && (
           <>
-            <h2 className="mt-4 font-semibold">Uploaded files</h2>
+            <h2 className="mt-4 font-semibold">File(s) to be uploaded</h2>
             <ScrollArea className="h-48">
               <div>
                 <div className="z-50 bg-gradient-to-b from-neutral-950 via-neutral-950 h-10 w-full -mb-24 -mt-6 absolute"></div>
