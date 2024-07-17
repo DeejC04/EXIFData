@@ -107,13 +107,13 @@ export default function FileUpload() {
 
     acceptedFiles.forEach(file => {
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = () => {
         setFilesToUpload((prevFilesToUpload) => {
           return prevFilesToUpload.map((item => {
             if (item.File === file) {
               return {
                 ...item,
-                previewBase64: e.target.result as string,
+                previewBase64: reader.result as string,
               }
             } else {
               return item
