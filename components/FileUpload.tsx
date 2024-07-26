@@ -1,7 +1,7 @@
 "use client";
 
 import { UploadCloud } from "lucide-react";
-import FilePreview from "./FilePreview";
+import UploadPreview from "./UploadPreview";
 import {
   Card,
   CardContent,
@@ -16,6 +16,9 @@ import { ScrollArea } from "./ui/scroll-area";
 import { UploadProgress } from "@/app/types/types";
 import { Button } from "./ui/button";
 import axios, { AxiosProgressEvent, CancelTokenSource } from "axios";
+import { cookies } from "next/headers";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function FileUpload() {
   const [filesToUpload, setFilesToUpload] = useState<UploadProgress[]>([]);
@@ -44,7 +47,9 @@ export default function FileUpload() {
 
       setUploadedFiles((prevUploadedFiles) => {
         const completedFile = filesToUpload.find((item) => item.File === file);
-        return completedFile ? [...prevUploadedFiles, { ...completedFile, progress }] : prevUploadedFiles;
+        return completedFile
+          ? [...prevUploadedFiles, { ...completedFile, progress }]
+          : prevUploadedFiles;
       });
     }
 
@@ -63,15 +68,13 @@ export default function FileUpload() {
     });
   };
 
-
-  
   const uploadImageToCloudinary = async (
     formData: FormData,
     onUploadProgress: (progressEvent: AxiosProgressEvent) => void,
     cancelSource: CancelTokenSource
   ) => {
     return axios.post(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUD_NAME}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData,
       {
         onUploadProgress,
@@ -99,33 +102,35 @@ export default function FileUpload() {
             progress: 0,
             File: file,
             source: null,
-            previewBase64: ""
+            publicID: "",
+            previewBase64: "",
           };
         }),
       ];
     });
 
-    acceptedFiles.forEach(file => {
-      const reader = new FileReader()
+    acceptedFiles.forEach((file) => {
+      const reader = new FileReader();
       reader.onload = () => {
         setFilesToUpload((prevFilesToUpload) => {
-          return prevFilesToUpload.map((item => {
+          return prevFilesToUpload.map((item) => {
             if (item.File === file) {
               return {
                 ...item,
                 previewBase64: reader.result as string,
-              }
+              };
             } else {
-              return item
+              return item;
             }
-          }))
-        })
-      }
-      reader.readAsDataURL(file)
-    })
+          });
+        });
+      };
+      reader.readAsDataURL(file);
+    });
   }, []);
 
   const handleUploadClick = async () => {
+    // Create an array of promises for uploading files
     const fileUploadBatch = filesToUpload.map((fileInfo) => {
       const formData = new FormData();
       formData.append("file", fileInfo.File);
@@ -134,16 +139,32 @@ export default function FileUpload() {
         process.env.NEXT_PUBLIC_UPLOAD_PRESET as string
       );
       const cancelSource = axios.CancelToken.source();
+
+      // Return a promise that resolves with the response
       return uploadImageToCloudinary(
         formData,
         (progressEvent) =>
           onUploadProgress(progressEvent, fileInfo.File, cancelSource),
         cancelSource
-      );
+      ).then((response) => {
+        return {
+          fileInfo,
+          response,
+        };
+      });
     });
 
     try {
-      await Promise.all(fileUploadBatch);
+      // Wait for all uploads to complete
+      const results = await Promise.all(fileUploadBatch);
+      // Process responses
+      const updatedFiles = results.map(({ fileInfo, response }) => {
+        fileInfo.publicID = response.data.public_id;
+        return fileInfo;
+      });
+
+      sessionStorage.setItem("uploadedFiles", JSON.stringify(updatedFiles));
+
       alert("All files uploaded successfully");
     } catch (error) {
       console.error("Error uploading files: ", error);
@@ -161,7 +182,9 @@ export default function FileUpload() {
     <div className="container flex justify-center p-4 sm:p-6 mx-auto">
       <Card
         className={`w-full max-w-full sm:max-w-lg transition-all duration-300 ease-in-out overflow-hidden ${
-          filesToUpload.length > 0 || uploadedFiles.length > 0 ? "max-h-[930px]" : "max-h-[250px]"
+          filesToUpload.length > 0 || uploadedFiles.length > 0
+            ? "max-h-[930px]"
+            : "max-h-[250px]"
         } ${isDragActive ? "bg-accent" : ""}`}
       >
         <CardHeader>
@@ -199,7 +222,7 @@ export default function FileUpload() {
                   <div className="z-50 bg-gradient-to-b from-neutral-950 via-neutral-950 h-10 w-full -mb-24 -mt-6 absolute"></div>
                 </div>
                 {filesToUpload.map((fileInfo, index) => (
-                  <FilePreview
+                  <UploadPreview
                     key={index}
                     fileName={fileInfo.File.name}
                     uploadProgress={fileInfo.progress}
@@ -220,7 +243,7 @@ export default function FileUpload() {
                   <div className="z-50 bg-gradient-to-b from-neutral-950 via-neutral-950 h-10 w-full -mb-24 -mt-6 absolute"></div>
                 </div>
                 {uploadedFiles.map((fileInfo, index) => (
-                  <FilePreview
+                  <UploadPreview
                     key={index}
                     fileName={fileInfo.File.name}
                     uploadProgress={fileInfo.progress}
@@ -239,6 +262,11 @@ export default function FileUpload() {
             </Button>
           </CardFooter>
         )}
+        <CardFooter>
+          <Link href="/editData">
+            <Button className="w-full">Edit metadata</Button>
+          </Link>
+        </CardFooter>
       </Card>
     </div>
   );

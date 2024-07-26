@@ -1,4 +1,5 @@
 import axios, { CancelTokenSource } from "axios";
+import { FileWithPath } from "react-dropzone";
 
 export interface FileProps {
   fileName: string;
@@ -14,8 +15,8 @@ export interface FileWithPreview extends File {
 
 export interface UploadProgress {
   progress: number;
-  File: File;
+  File: FileWithPath;
   source: CancelTokenSource | null;
-  // preview: string;
+  publicID: string;
   previewBase64: string;
 }
